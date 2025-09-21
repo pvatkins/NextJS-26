@@ -42,6 +42,10 @@ export default function TestGetLastEntries() {
     );
   }
 
+function fmtAmt(amt) {
+    return "$ " + (amt ? parseFloat(amt).toFixed(2) : "0.00");
+}
+
   return (
     <main className="p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Recent Paypal Transactions</h1>
@@ -58,39 +62,41 @@ export default function TestGetLastEntries() {
         <>
           {/* First table */}
           <div>
-            <p>Details record for the last {results.length} rows</p>
+            <p>Details record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
             <table className="w-full border-collapse border border-gray-400 mt-6">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border px-2 py-1">date</th>
-                  <th className="border px-2 py-1">callsign</th>
-                  <th className="border px-2 py-1">name</th>
-                  <th className="border px-2 py-1">years</th>
-                  <th className="border px-2 py-1">primary</th>
-                  <th className="border px-2 py-1">family</th>
-                  <th className="border px-2 py-1">repeater</th>
-                  <th className="border px-2 py-1">digipeater</th>
-                  <th className="border px-2 py-1">subtotal</th>
-                  <th className="border px-2 py-1">PayPalFee</th>
-                  <th className="border px-2 py-1">club</th>
-                  <th className="border px-2 py-1">Total</th>
+                    <th className="border px-2 py-1">indx</th>
+                    <th className="border px-2 py-1">date</th>
+                    <th className="border px-2 py-1">callsign</th>
+                    <th className="border px-2 py-1">name</th>
+                    <th className="border px-2 py-1">years</th>
+                    <th className="border px-2 py-1">primary</th>
+                    <th className="border px-2 py-1">family</th>
+                    <th className="border px-2 py-1">repeater</th>
+                    <th className="border px-2 py-1">digipeater</th>
+                    <th className="border px-2 py-1">subtotal</th>
+                    <th className="border px-2 py-1">PayPalFee</th>
+                    <th className="border px-2 py-1">club</th>
+                    <th className="border px-2 py-1">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, i) => (
                   <tr key={i}>
-                    <td className="border px-2 py-1">{r.transaction_date}</td>
+                    <td className="border px-2 py-1">{r.myindex}</td>
+                    <td className="border px-2 py-1">{r.mydate}</td>
                     <td className="border px-2 py-1">{r.callsigns}</td>
-                    <td className="border px-2 py-1">{r.fullname}</td>
+                    <td className="border px-2 py-1">{r.FullName}</td>
                     <td className="border px-2 py-1">{r.years}</td>
-                    <td className="border px-2 py-1">{r.primary_dues}</td>
-                    <td className="border px-2 py-1">{r.family_dues}</td>
-                    <td className="border px-2 py-1">{r.repeater_donation}</td>
-                    <td className="border px-2 py-1">{r.digipeater_donation}</td>
+                    <td className="border px-2 py-1">{r.primary}</td>
+                    <td className="border px-2 py-1">{r.family}</td>
+                    <td className="border px-2 py-1">{r.repeater}</td>
+                    <td className="border px-2 py-1">{r.digipeater}</td>
                     <td className="border px-2 py-1">{r.subtotal}</td>
-                    <td className="border px-2 py-1">{r.paypal_fee}</td>
-                    <td className="border px-2 py-1">{r.club_receives}</td>
-                    <td className="border px-2 py-1">{r.total_charges}</td>
+                    <td className="border px-2 py-1">{r.paypalfee}</td>
+                    <td className="border px-2 py-1">{r.clubreceives}</td>
+                    <td className="border px-2 py-1">{r.total}</td>
                   </tr>
                 ))}
               </tbody>
@@ -99,27 +105,29 @@ export default function TestGetLastEntries() {
 
           {/* Second table */}
           <div>
-            <p>Tracking record for the last {results.length} rows</p>
+            <p>Tracking record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
             <table className="w-full border-collapse border border-gray-400 mt-6">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border px-2 py-1">pp_id</th>
-                  <th className="border px-2 py-1">pp_orderID</th>
-                  <th className="border px-2 py-1">status</th>
-                  <th className="border px-2 py-1">pp_total</th>
-                  <th className="border px-2 py-1">paypal_fee</th>
-                  <th className="border px-2 py-1">club_receives</th>
+                    <th className="border px-2 py-1">indx</th>
+                    <th className="border px-2 py-1">pp_id</th>
+                    <th className="border px-2 py-1">pp_orderID</th>
+                    <th className="border px-2 py-1">status</th>
+                    <th className="border px-2 py-1">pp_total</th>
+                    <th className="border px-2 py-1">paypal_fee</th>
+                    <th className="border px-2 py-1">club_receives</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, i) => (
                   <tr key={i}>
+                    <td className="border px-2 py-1">{r.myindex}</td>
                     <td className="border px-2 py-1">{r.pp_id}</td>
                     <td className="border px-2 py-1">{r.pp_orderID}</td>
                     <td className="border px-2 py-1">{r.transaction_status}</td>
-                    <td className="border px-2 py-1">{r.pp_total}</td>
-                    <td className="border px-2 py-1">{r.paypal_fee}</td>
-                    <td className="border px-2 py-1">{r.club_receives}</td>
+                    <td className="border px-2 py-1">{fmtAmt(r.pp_total)}</td>
+                    <td className="border px-2 py-1">{r.paypalfee}</td>
+                    <td className="border px-2 py-1">{r.clubreceives}</td>
                   </tr>
                 ))}
               </tbody>

@@ -29,3 +29,4 @@
   "unoptimized" property to the <Image>. The image is at
   frontend/public/images/misc/wtow_003.gif and is 
   referenced on the HomePage.
+* Add code to see recent transactions
