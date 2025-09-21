@@ -1,4 +1,4 @@
-// backend_paypal/server/server.js
+// backend_paypal/server/server.mjs
 import express from "express";
 import https from "https";
 import fs from "fs";

@@ -26,13 +26,13 @@ In conjunction, we will attempt to include participants via Zoom at the address 
     imageSrc: "/images/misc/tow_003.gif",
     imageAlt: "Small tower icon",
     title: "CARC VHF & HF Nets",
-    linkHref: "/carc-about",
+    linkHref: "/about-carc",
   },
   {
     imageSrc: "/images/misc/tow_003.gif",
     imageAlt: "Small tower icon",
     title: "Net Control Roster",
-    linkHref: "/carc-net-control-roster",
+    linkHref: "/net-control-roster",
   },
 ];
 
@@ -57,6 +57,7 @@ export default function CARCHomePage() {
                 alt={item.imageAlt}
                 width={50}
                 height={50}
+                unoptimized
                 className="w-12 h-12 object-contain"
               />
             </div>

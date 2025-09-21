@@ -1,0 +1,31 @@
+
+* (OK) Fix Test Get Full Name
+* (OK) Remove Prefix 'CARC ' from all Menu Items
+* (OK) Remove Net Control Roster Banner
+* (OK) Eliminate 404 Error in [CARC] Club News Page
+* (OK) Eliminate 404 Error in Home Page (CARC VHF & HF Nets)
+* (OK) Eliminate 404 Error in Home Page (CARC Net Control Roster)
+* (OK) Eliminate 404 Error in CARC Officers & Staff (Changed folder name)
+* (OK) Eliminate 404 Error in CARC Wants * Swaps (Changed SideMenu)
+* Check Out PayPal processing using 'Sandbox' Credentials
+* Find out about website for San Mateo ACS Radio Plan
+* Find out about website for South County Amateur Radio Emergency ~ K6MPN.org
+* In Links Page, References, Remove Half Moon Bay Club
+* In Links Page, References, Put QRZ pace on top
+* Add list of local Repeaters from Steve for Repeaters Section
+* Add wrtc2026 somewhere (wrtc2026.org)
+* Add aprs.org to APRS Section
+* Move VEC's amd Exams into Local Radio Clubs
+* Become a new owner of Google Calendar
+* Fix Repeater Usage Reports
+* Remove the early development group pages from Side Menu
+* Add a management section with LogIn
+* Think of temporary website name, such as CARCTEST for deployment
+* Update current club enrollment to the database
+* Prepre a Database Management Plan to to enable club officers to 
+  interrogate and update the database as needed.
+* The requested resource "/images/misc/tow_003.gif" is an animated 
+  image so it will not be optimized. Consider adding the 
+  "unoptimized" property to the <Image>. The image is at
+  frontend/public/images/misc/wtow_003.gif and is 
+  referenced on the HomePage.

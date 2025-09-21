@@ -114,7 +114,7 @@ export default function CARCNetControlRoster() {
         <h1 className="text-4xl font-extrabold text-blue-800 mb-4">
           CARC Net Control Roster {currentYear}
         </h1>
-        {/* Assuming image is in public/images */}
+        {/* Removing the banner image as per ToDo list
         <img
           className="mx-auto rounded-lg shadow-md"
           src="/images/NetControlRoster_bnr.png"
@@ -122,8 +122,9 @@ export default function CARCNetControlRoster() {
           width={600} // Adjust as needed
           height={60} // Adjust as needed
         />
-      </div>
 
+      */}
+      </div>
       {/* Roster Table */}
       <div className="overflow-x-auto bg-white shadow-lg rounded-xl">
         <table className="min-w-full text-left border-collapse">
@@ -132,7 +133,8 @@ export default function CARCNetControlRoster() {
               <th className="py-3 px-2 text-center font-semibold text-base sm:text-lg border-b border-gray-200 w-2/19">Month</th>
               <th className="py-3 px-2 text-center font-semibold text-base sm:text-lg border-b border-gray-200 w-2/19">Day</th>
               <th className="py-3 px-4 text-left font-semibold text-base sm:text-lg border-b border-gray-200 w-5/19">Net Control</th>
-              <th className="w-1/19 border-b border-gray-200"></th> {/* Empty separator column */}
+              <th className="w-1/19 border-b border-gray-200"></th> 
+              {/* Empty separator column above */}
               <th className="py-3 px-2 text-center font-semibold text-base sm:text-lg border-b border-gray-200 w-2/19">Month</th>
               <th className="py-3 px-2 text-center font-semibold text-base sm:text-lg border-b border-gray-200 w-2/19">Day</th>
               <th className="py-3 px-4 text-left font-semibold text-base sm:text-lg border-b border-gray-200 w-5/19">Net Control</th>

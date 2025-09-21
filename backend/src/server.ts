@@ -1,3 +1,5 @@
+// backend/src/server.ts
+
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -11,18 +13,29 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // --- Middleware ---
+/*
+This middleware reduces the possible hardcoding of allowed origins.
+by use of regex-like functions such as startsWith.
+*/
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://coastsidearc.org",
-      "http://192.168.1.222:3000",
-      "http://192.168.1.110:3000",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow server-side
+      if (
+        origin.startsWith("http://localhost:300") ||
+        origin.startsWith("http://192.168.1.222:300") ||
+        origin.startsWith("http://192.168.1.216:300") ||
+        origin === "https://coastsidearc.org"
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST"],
     credentials: true,
   })
 );
+
 app.use(express.json());
 
 // --- Helper to enforce env vars ---
@@ -75,6 +88,8 @@ app.post("/api/getFullName", async (req, res) => {
     if (connection) connection.release();
   }
 });
+
+
 
 // --- API Route 2: Submit Dues Data ---
 interface DuesFormData {
@@ -201,6 +216,39 @@ app.get("/api/repeater-report-exists", async (req, res) => {
     });
   }
 });
+
+// --- API Route 4: Getpp_tnx data ---
+/*
+We can either get all data, or filter by transaction_status
+by providing a ?status=posted (or pending, etc) query param.
+*/
+app.get("/api/getPPtnxdata", async (req, res) => {
+  const status = req.query.status as string | undefined;
+  let query = "SELECT * FROM pp_tnx";
+  const params: any[] = [];
+
+  if (status) {
+    query += " WHERE transaction_status = ?";
+    params.push(status);
+  }
+
+  query += " ORDER BY pp_id DESC";
+
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
+    if (rows.length > 0) {
+      res.status(200).json({ results: rows });
+    } else {
+      res.status(404).json({ error: "No data found" });
+    }
+  } catch (err) {
+    console.error("Database error in /api/getPPtnxdata:", err);
+    res.status(500).json({ error: "Failed to retrieve pp_tnx data" });
+  }
+});
+
+
+
 
 // --- DB Connection Test ---
 async function testDbConnection(): Promise<boolean> {
