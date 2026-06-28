@@ -1,0 +1,136 @@
+
+// frontend/src/app/test-get-full-name/page.js
+'use client';
+
+import Link from 'next/link';
+import React, { useState } from 'react';
+
+export default function TestGetFullNamePage() {
+  const [resultsMatrix, setResultsMatrix] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // ✅ FIX: Moved to the top so it is declared before memberDictionary uses it
+  const defaultName = "UNKNOWN"; // Fallback for callsigns not found in the database
+
+  // The original test dictionary that provides multiple test cases and expected results.
+  const memberDictionary = [
+    { call: 'KN6PIV', expected: 'Jillian Aldersen' },
+    { call: 'KM6HYK', expected: 'William J. Anderson' },
+    { call: 'KM6UYM', expected: 'Fernel Andong' },
+    { call: 'AI6BB', expected: 'Paul Atkins' },
+    { call: 'KN6ORM', expected: 'Steve Austin' },
+    { call: 'W2OKB', expected: 'Bharat Bailur' },
+    { call: 'W6LOG', expected: 'Robert Barbitta' },
+    { call: 'KI6HIG', expected: 'Gary Barnes' },
+    { call: 'KJ6FHQ', expected: 'Anna Bernstine' },
+    { call: 'N6ZEN', expected: 'Dan Bernstein' },
+    { call: 'KK6FOI', expected: 'Emily Bernstein' },
+    { call: 'AA6XL', expected: 'Michael G. Bevington' },
+    { call: 'WB6JKV', expected: 'Michael S. Herbert' },
+    { call: 'N6FG', expected: 'Frank Erbacher' },
+    { call: 'N6SJF', expected: 'Jonathan Lancelle' },
+    { call: 'KJ6OGL', expected: 'Tom Oliver' },
+    { call: 'W1AW', expected: defaultName }, // Now works perfectly!
+    { call: 'WA6TOW', expected: defaultName }, // Now works perfectly!
+  ];
+
+  // Your optimized batch lookup test routine
+  const runBatchLookupTest = async () => {
+    setLoading(true);
+    setError(null);
+    setResultsMatrix({});
+
+    const testCallsigns = memberDictionary.map(entry => entry.call);
+    console.log("🚀 Test Callsigns Array for Batch Request:", testCallsigns);
+
+    try {
+      // Fire exactly ONE network request containing the whole list
+      const response = await fetch("/api/getFullName", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callsigns: testCallsigns }),
+      });
+      console.log(response.status, response.statusText);
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status code: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const nameMap = data.results;
+      console.log("🚀 Batch Lookup Results Matrix:", nameMap);
+
+      setResultsMatrix(nameMap || {});
+
+      const kn6pivName = nameMap["KN6PIV"] || defaultName;
+      const km6hykName = nameMap["KM6HYK"] || defaultName;
+      const km6uymName = nameMap["KM6UYM"] || defaultName;
+
+      console.log("Verified KN6PIV:", kn6pivName);
+      console.log("Verified KM6HYK:", km6hykName);
+      console.log("Verified KM6UYM:", km6uymName);
+
+    } catch (error) {
+      console.error("❌ Frontend test execution crashed:", error);
+      setError(error.message || 'An error occurred during lookup.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto bg-white border border-slate-200 rounded-xl shadow-sm mt-8">
+      <h2 className="text-xl font-bold text-slate-900 mb-2">
+        ⚡ High-Speed Batch Name Lookup Test Portal
+      </h2>
+      <p className="text-slate-600 text-sm mb-6">
+        This diagnostic page tests the optimized MySQL <code>IN()</code> routing matrix by querying <strong>KN6PIV, KM6HYK, KM6UYM and others</strong> all inside exactly one network payload.
+      </p>
+
+      <button
+        onClick={runBatchLookupTest}
+        disabled={loading}
+        className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium py-2.5 px-4 rounded-md transition-colors disabled:bg-slate-400 shadow-sm text-sm"
+      >
+        {loading ? 'Executing Network Query...' : 'Run Single-Batch Database Test'}
+      </button>
+
+      {/* Error Feedback */}
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded">
+          {error}
+        </div>
+      )}
+
+      {/* Output Panel */}
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold text-slate-800 mb-2">Returned JSON Lookup Matrix:</h3>
+        <div className="bg-slate-900 text-emerald-400 p-4 rounded-md font-mono text-xs overflow-x-auto border border-slate-800 shadow-inner">
+          <pre>{JSON.stringify(resultsMatrix, null, 2)}</pre>
+        </div>
+      </div>
+
+      {/* Visual Component Verification */}
+      {Object.keys(resultsMatrix).length > 0 && (
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <h3 className="text-sm font-semibold text-slate-800 mb-2">Render Matching Verification:</h3>
+          <ul className="space-y-1.5 text-sm text-slate-700">
+            {Object.entries(resultsMatrix).map(([callsign, name]) => (
+              <li key={callsign} className="bg-slate-50 px-3 py-1.5 rounded border border-slate-100">
+                <span className="font-bold text-slate-900">{callsign}:</span> {name || <span className="text-amber-600 font-medium italic">No Entry Found</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="mt-6 pt-4 border-t border-slate-200 text-center">
+        <Link href="/home-page" className="text-sm text-blue-600 hover:underline">
+          ← Return to Home Page
+        </Link>
+      </div>
+    </div>
+  );
+}

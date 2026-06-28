@@ -1,7 +1,21 @@
 // frontend/src/data/newsletters.js
 
 const newsletters = {
-  2025: [
+  2026: [
+    { month: "January",  file: "CARC Newsletter 01 January 2026.pdf",  displayDate: "Jan 2026" },
+    { month: "February", file: "CARC Newsletter 02 February 2026.pdf", displayDate: "Feb 2026" },
+    { month: "March",    file: "CARC Newsletter 03 March 2026.pdf",    displayDate: "Mar 2026" },
+    { month: "April",    file: "CARC Newsletter 04 April 2026.pdf",    displayDate: "Apr 2026" },
+    { month: "May",      file: "CARC Newsletter 05 May 2026.pdf",      displayDate: "May 2026" },
+    { month: "June",     file: "CARC Newsletter 06 June 2026.pdf",     displayDate: "Jun 2026" },
+    { month: "July",     file: "CARC Newsletter 07 July 2026.pdf",     displayDate: "Jul 2026" },
+    { month: "August",   file: "CARC Newsletter 08 August 2026.pdf",   displayDate: "Aug 2026" },
+    { month: "September",file: "CARC Newsletter 09 September 2026.pdf",displayDate: "Sep 2026" },
+    { month: "October",  file: "CARC Newsletter 10 October 2026.pdf",  displayDate: "Oct 2026" },
+    { month: "November", file: "CARC Newsletter 11 November 2026.pdf", displayDate: "Nov 2026" },
+    { month: "December", file: "CARC Newsletter 12 December 2026.pdf", displayDate: "Dec 2026" },
+   ],
+     2025: [
     { month: "January",  file: "CARC Newsletter 01 January 2025.pdf",  displayDate: "Jan 2025" },
     { month: "February", file: "CARC Newsletter 02 February 2025.pdf", displayDate: "Feb 2025" },
     { month: "March",    file: "CARC Newsletter 03 March 2025.pdf",    displayDate: "Mar 2025" },

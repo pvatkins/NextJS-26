@@ -1,4 +1,3 @@
-
 // frontend/src/app/paypal-dues/page.js
 // 
 // This component handles the frontend dues renewal form for the Coastside Amateur Radio Club.YEARLY_DUES
@@ -26,7 +25,7 @@
 
 
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 // Constants for calculations
 const PAYPAL_FIXED_FEE = 0.49;
@@ -37,7 +36,7 @@ const DEFAULT_FULLNAME = "U N D E F I N E D";
 
 // API Endpoints - Replace with your actual Next.js API routes
 const FULL_NAME_API_URL = 'http://localhost:3000/api/getFullName'; // Example: /api/getFullName.js
-const RECEPTOR_API_URL  = 'http://localhost:3000/api/submitDues'; // Example: /api/submitDues.js
+const RECEPTOR_API_URL = 'http://localhost:3000/api/submitDues'; // Example: /api/submitDues.js
 
 function CarcPayPalDues() {
   const [selectedYears, setSelectedYears] = useState(() => {
@@ -47,8 +46,7 @@ function CarcPayPalDues() {
   });
   const [isNewMember, setIsNewMember] = useState(false);
   const [callsigns, setCallsigns] = useState('');
-  const [repeaterDonation, setRepeaterDonation] = useState(0.00);
-  const [APRSDonation, setAPRSDonation] = useState(0.00);
+  const [donation, setDonation] = useState(0.00);
   const [includePaypalFee, setIncludePaypalFee] = useState(false);
 
   // Calculated values
@@ -117,16 +115,19 @@ function CarcPayPalDues() {
 
   // Handle callsigns input change
   const handleCallsignsChange = (e) => {
-    setCallsigns(e.target.value.replace(/[,\s]+/g, " ").trim().toUpperCase());
+    // 1. Convert to uppercase first
+    const upper = e.target.value.toUpperCase();
+
+    // 2. Replace commas and multiple consecutive spaces with a single space.
+    // Note: We removed .trim() so trailing spaces survive while typing!
+    const cleanValue = upper.replace(/[,\s]+/g, " ");
+
+    setCallsigns(cleanValue);
   };
 
   // Handle donation input changes
-  const handleRepeaterChange = (e) => {
-    setRepeaterDonation(parseFloat(e.target.value) || 0);
-  };
-
-  const handleAPRSChange = (e) => {
-    setAPRSDonation(parseFloat(e.target.value) || 0);
+  const handleDonationChange = (e) => {
+    setDonation(parseFloat(e.target.value) || 0);
   };
 
   // Handle PayPal fee checkbox change
@@ -160,7 +161,7 @@ function CarcPayPalDues() {
     }
     setFamilyDues(calculatedFamily);
 
-    const calculatedSubtotal = calculatedPrimary + calculatedFamily + repeaterDonation + APRSDonation;
+    const calculatedSubtotal = calculatedPrimary + calculatedFamily + donation;
     setSubtotal(calculatedSubtotal);
 
     let calculatedPaypalFee = 0;
@@ -194,8 +195,7 @@ function CarcPayPalDues() {
       callsign: arrCallsigns[0] || '', // Primary callsign
       primary: calculatedPrimary,
       family: calculatedFamily,
-      repeater: repeaterDonation,
-      APRS: APRSDonation,
+      donation: donation,
       subtotal: calculatedSubtotal,
       pay_paypal: includePaypalFee ? 'yes' : 'no',
       paypalfee: calculatedPaypalFee,
@@ -206,8 +206,8 @@ function CarcPayPalDues() {
       transaction_status: 'pending',
     });
 
-  }, [selectedYears, isNewMember, callsigns, repeaterDonation, APRSDonation, 
-      includePaypalFee, proRataFactor, currentDateTime]);
+  }, [selectedYears, isNewMember, callsigns, donation,
+    includePaypalFee, proRataFactor, currentDateTime]);
 
 
   // Asynchronous API calls
@@ -251,14 +251,13 @@ function CarcPayPalDues() {
     }
   };
 
-  // Submit handler
+  // Complete direct submit handler inside your frontend dues page component
   const handleSubmit = async () => {
-    // Basic validation for at least one year selected
+    // 1. Basic input validations
     if (selectedYears.size === 0) {
       alert("At least one year must be selected.");
       return;
     }
-    // Basic validation for callsigns
     if (!callsigns.trim()) {
       alert("Callsign(s) cannot be empty.");
       return;
@@ -266,27 +265,57 @@ function CarcPayPalDues() {
 
     try {
       const fullName = await getFullNameFromMergeTable(formData.callsign);
-      console.log('Full Name:', fullName); // For debugging, you might want to display this
-      
-      // Update formData with fullname before sending
-      const dataToSend = { ...formData, fullname: fullName }; 
 
-      const newPpId = await insertDataIntoPPTnxTable(dataToSend);
-      console.log('Inserted Data into pp_tnx table with ID:', newPpId);
+      // Construct the data payload ensuring clean spacing constraints
+      const dataToSend = {
+        ...formData,
+        callsigns: callsigns.trim(),
+        fullname: fullName
+      };
 
-      // Redirect to PayPal payment
-      const transferBase = "https://coastsideARC.org:5556/make_payment/";
-      const fullTransferAddress = transferBase + newPpId;
+      // 2. Fire the database persistence execution directly
+      const response = await fetch("/api/submitDues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSend),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status code: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // 3. Fallback check: Grab whatever identifier key the server returned
+      const targetTrackingId = data.transactionId || data.pp_id || data.id;
+
+      if (!targetTrackingId) {
+        console.error("Authentication Error: Token missing from server payload", data);
+        alert("System sync error: Tracking ID missing.");
+        return;
+      }
+
+      console.log("🔗 Routing to payment gateway using token:", targetTrackingId);
+
+      // 4. Secure handoff to the standalone PayPal Express ecosystem on port 5556
+      // ❌ CHANGE THIS (For cloud deployment only):
+      // const transferBase = "https://coastsidearc.org:5556";
+
+      // ✅ TO THIS (For local development and debugging):
+      const transferBase = "http://localhost:5556";
+      const fullTransferAddress = transferBase + "/make_payment/" + targetTrackingId;
+
+      console.log("🚀 LOCAL DEVELOPMENT REDIRECT:", fullTransferAddress);
       window.location.replace(fullTransferAddress);
 
     } catch (error) {
-      console.error("Submission failed:", error);
-      alert("An error occurred during submission. Please try again.");
+      console.error("❌ Submission process crashed:", error);
+      alert("An error occurred during submission. Please check your network connection.");
     }
   };
 
   const currentYear = new Date().getFullYear();
-  const yearsToDisplay = Array.from({ length: 4 }, (_, i) => currentYear + i); // 2025, 2026, 2027, 2028
+  const yearsToDisplay = Array.from({ length: 4 }, (_, i) => currentYear + i); // 2026, 2027, 2028, 2029
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
@@ -386,27 +415,14 @@ function CarcPayPalDues() {
 
         {/* Donation Fields */}
         <div className="grid grid-cols-2 gap-y-3 gap-x-4">
-          <label htmlFor="repeater" className="text-gray-800 font-medium">
-            Repeater Fund Donation:
+          <label htmlFor="donation" className="text-gray-800 font-medium">
+            Donation:
           </label>
           <input
             type="number"
-            id="repeater"
-            value={repeaterDonation.toFixed(2)}
-            onChange={handleRepeaterChange}
-            min="0"
-            step="0.01"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-right"
-          />
-
-          <label htmlFor="APRS" className="text-gray-800 font-medium">
-            APRS Fund Donation:
-          </label>
-          <input
-            type="number"
-            id="APRS"
-            value={APRSDonation.toFixed(2)}
-            onChange={handleAPRSChange}
+            id="donation"
+            value={donation.toFixed(2)}
+            onChange={handleDonationChange}
             min="0"
             step="0.01"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-right"

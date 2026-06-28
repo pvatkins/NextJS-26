@@ -11,12 +11,12 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "mysql2": "^2.3.3",
+    "exif-parser": "^0.1.12",
+    "image-size": "^2.0.2",
+    "mysql2": "^3.22.3",
     "next": "^15.4.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "exif-parser": "^0.1.12",
-    "image-size": "^2.0.2"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

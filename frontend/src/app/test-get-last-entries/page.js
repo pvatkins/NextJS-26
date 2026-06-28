@@ -1,7 +1,7 @@
 // frontend/src/app/test-get-last-entries/page.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -42,9 +42,9 @@ export default function TestGetLastEntries() {
     );
   }
 
-function fmtAmt(amt) {
-    return "$ " + (amt ? parseFloat(amt).toFixed(2) : "0.00");
-}
+  function fmtAmt(amt) {
+    return "$ " + (amt ? parseFloat(amt).toFixed(2) : " 0.00");
+  }
 
   return (
     <main className="p-6 max-w-4xl mx-auto space-y-6">
@@ -62,28 +62,28 @@ function fmtAmt(amt) {
         <>
           {/* First table */}
           <div>
-            <p>Details record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
-            <table className="w-full border-collapse border border-gray-400 mt-6">
+            <p className="font-bold">Details record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
+            <table className="w-full table-auto border-collapse border border-gray-400 mt-6">
               <thead>
                 <tr className="bg-gray-100">
-                    <th className="border px-2 py-1">indx</th>
-                    <th className="border px-2 py-1">date</th>
-                    <th className="border px-2 py-1">callsign</th>
-                    <th className="border px-2 py-1">name</th>
-                    <th className="border px-2 py-1">years</th>
-                    <th className="border px-2 py-1">primary</th>
-                    <th className="border px-2 py-1">family</th>
-                    <th className="border px-2 py-1">repeater</th>
-                    <th className="border px-2 py-1">digipeater</th>
-                    <th className="border px-2 py-1">subtotal</th>
-                    <th className="border px-2 py-1">PayPalFee</th>
-                    <th className="border px-2 py-1">club</th>
-                    <th className="border px-2 py-1">Total</th>
+                  <th className="border px-2 py-1">indx</th>
+                  <th className="border px-2 py-1">date</th>
+                  <th className="border px-2 py-1">callsign</th>
+                  <th className="border px-2 py-1">name</th>
+                  <th className="border px-2 py-1">years</th>
+                  <th className="border px-2 py-1">Primary</th>
+                  <th className="border px-2 py-1">Family</th>
+                  <th className="border px-2 py-1">Donation</th>
+                  <th className="border px-2 py-1">Subtotal</th>
+                  <th className="border px-2 py-1">PayPalFee</th>
+                  <th className="min-w-fit border px-2 py-1">Club</th>
+                  <th className="min-w-fit border px-2 py-1">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, i) => (
-                  <tr key={i}>
+                  <tr key={i}
+                    className={i % 2 === 0 ? "bg-yellow-100" : "bg-blue-100"}>
                     <td className="border px-2 py-1">{r.myindex}</td>
                     <td className="border px-2 py-1">{r.mydate}</td>
                     <td className="border px-2 py-1">{r.callsigns}</td>
@@ -91,12 +91,11 @@ function fmtAmt(amt) {
                     <td className="border px-2 py-1">{r.years}</td>
                     <td className="border px-2 py-1">{r.primary}</td>
                     <td className="border px-2 py-1">{r.family}</td>
-                    <td className="border px-2 py-1">{r.repeater}</td>
-                    <td className="border px-2 py-1">{r.digipeater}</td>
+                    <td className="border px-2 py-1">{r.donation}</td>
                     <td className="border px-2 py-1">{r.subtotal}</td>
                     <td className="border px-2 py-1">{r.paypalfee}</td>
-                    <td className="border px-2 py-1">{r.clubreceives}</td>
-                    <td className="border px-2 py-1">{r.total}</td>
+                    <td className="min-w-fit border px-2 py-1">{r.clubreceives}</td>
+                    <td className="min-w-fit border px-2 py-1">{r.total}</td>
                   </tr>
                 ))}
               </tbody>
@@ -105,22 +104,23 @@ function fmtAmt(amt) {
 
           {/* Second table */}
           <div>
-            <p>Tracking record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
+            <p className="font-bold">Tracking record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
             <table className="w-full border-collapse border border-gray-400 mt-6">
               <thead>
                 <tr className="bg-gray-100">
-                    <th className="border px-2 py-1">indx</th>
-                    <th className="border px-2 py-1">pp_id</th>
-                    <th className="border px-2 py-1">pp_orderID</th>
-                    <th className="border px-2 py-1">status</th>
-                    <th className="border px-2 py-1">pp_total</th>
-                    <th className="border px-2 py-1">paypal_fee</th>
-                    <th className="border px-2 py-1">club_receives</th>
+                  <th className="border px-2 py-1">indx</th>
+                  <th className="border px-2 py-1">pp_id</th>
+                  <th className="border px-2 py-1">pp_orderID</th>
+                  <th className="border px-2 py-1">status</th>
+                  <th className="border px-2 py-1">pp_total</th>
+                  <th className="border px-2 py-1">paypal_fee</th>
+                  <th className="border px-2 py-1">club_receives</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r, i) => (
-                  <tr key={i}>
+                  <tr key={i}
+                    className={i % 2 === 0 ? "bg-yellow-100" : "bg-blue-100"}>
                     <td className="border px-2 py-1">{r.myindex}</td>
                     <td className="border px-2 py-1">{r.pp_id}</td>
                     <td className="border px-2 py-1">{r.pp_orderID}</td>

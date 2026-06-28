@@ -1,0 +1,91 @@
+
+> monorepo-nextjs-paypal-integration@1.0.0 lint:frontend
+> eslint frontend
+
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/about-carc/page.tsx
+  21:63  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/coming-events/page.tsx
+  84:30  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/exams/page.tsx
+  75:73  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  76:15  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/how-it-works/page.tsx
+  49:72   error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:138  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  67:164  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  85:169  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/net-control-roster/failed_page.js
+  81:7  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/net-control-roster/layout.js
+  12:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/net-control-roster/page.js
+  81:7  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/newsletter/[year]/page.js
+  28:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/newsletter/page.js
+  35:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/north-peak/page.tsx
+  66:13  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  67:11  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/paypal-dues/page.js
+  292:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/photo-gallery/GalleryClient.js
+  27:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/photo-gallery/page.js
+  11:10  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/presentations/page.tsx
+  61:45  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`         react/no-unescaped-entities
+  66:42  error  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/privacy-policy/page.tsx
+  47:239  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/repeater-calendar/page.js
+  18:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/repeater-usage/page.js
+  79:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/services/page.js
+  11:9  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/test-get-full-name/page.js
+  85:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/test-get-last-entries/page.js
+  38:7  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/app/wants-and-swaps/page.tsx
+  22:54  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  22:57  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  22:71  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  46:44  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  46:50  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  64:44  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  64:59  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/components/Footer.js
+  15:5  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/components/Header.js
+  8:9  error  Parsing error: Unexpected token <
+
+/home/paul/projects/AI_Work/NextJS/frontend/src/components/SideMenu.js
+  73:5  error  Parsing error: Unexpected token <
+
+✖ 36 problems (36 errors, 0 warnings)
+

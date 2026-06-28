@@ -22,17 +22,14 @@ const SideMenu = () => {
     { name: "Photo Gallery", path: "/photo-gallery" },
     { name: "Club News", path: "/news" },
     { name: "Exams", path: "/exams" },
-    { name: "Net Control Roster", path: "/net-control-roster" },
     { name: "Links", path: "/links" },
     { name: "North Peak Repeater Site", path: "/north-peak" },
     { name: "Officers & Staff", path: "/officers-staff" },
     { name: "Repeater Calendar", path: "/repeater-calendar" },
     { name: "Repeater Usage", path: "/repeater-usage" },
     { name: "Wants and Swaps", path: "/wants-and-swaps" },
+    { name: "Net Control Roster", path: "/net-control-roster" },
     sep("carc_separator_1"),
-    { name: "Test Get Full Name", path: "/test-get-full-name" },
-    { name: "Test Get Last Entries", path: "/test-get-last-entries" },
-    sep("carc_separator_2"),
     // Some Documents (shown in Blue text)
     {
       name: "Net Checkin Script",
@@ -57,15 +54,20 @@ const SideMenu = () => {
     {
       name: "CONSTITUTION & BYLAWS (PDF)",
       type: "pdf",
-      url: "/documents/CARC Constitution and Bylaws -- adopted June 11_2014.pdf",
+      url: "/documents/CARC_Constitution_and_Bylaws_08-27-2025.pdf",
     },
+    sep("carc_separator_2"),
+    { name: "Test Get Full Name", path: "/test-get-full-name" },
+    { name: "Test Get Last Entries", path: "/test-get-last-entries" },
+    
     sep("carc_separator_3"),
     /* The original menu items created at the start of the project
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
     { name: "Our Services", path: "/services" },
-    { name: "How It Works", path: "/how-it-works" },
      */
+    { name: "How It Works", path: "/how-it-works" },
+    
   ];
 
   return (
