@@ -218,7 +218,7 @@ function CarcPayPalDues() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ callsign }),
+        body: JSON.stringify({ callsign })
       });
       if (!response.ok) {
         throw new Error(`Error fetching FullName: ${response.statusText}`);
@@ -265,6 +265,7 @@ function CarcPayPalDues() {
 
     try {
       const fullName = await getFullNameFromMergeTable(formData.callsign);
+      console.log("DEBUG - Resolved full name for callsign:", fullName);
 
       // Construct the data payload ensuring clean spacing constraints
       const dataToSend = {
@@ -274,6 +275,8 @@ function CarcPayPalDues() {
       };
 
       // 2. Fire the database persistence execution directly
+      console.log("DEBUG - What the frontend is sending to /api/submitDues:", dataToSend);
+
       const response = await fetch("/api/submitDues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,32 +289,28 @@ function CarcPayPalDues() {
 
       const data = await response.json();
 
-      // 3. Fallback check: Grab whatever identifier key the server returned
-      const targetTrackingId = data.transactionId || data.pp_id || data.id;
-
-      if (!targetTrackingId) {
-        console.error("Authentication Error: Token missing from server payload", data);
-        alert("System sync error: Tracking ID missing.");
-        return;
-      }
-
-      console.log("🔗 Routing to payment gateway using token:", targetTrackingId);
-
-      // 4. Secure handoff to the standalone PayPal Express ecosystem on port 5556
-      // ❌ CHANGE THIS (For cloud deployment only):
-      // const transferBase = "https://coastsidearc.org:5556";
-
-      // ✅ TO THIS (For local development and debugging):
-      const transferBase = "http://localhost:5556";
-      const fullTransferAddress = transferBase + "/make_payment/" + targetTrackingId;
-
-      console.log("🚀 LOCAL DEVELOPMENT REDIRECT:", fullTransferAddress);
-      window.location.replace(fullTransferAddress);
-
-    } catch (error) {
-      console.error("❌ Submission process crashed:", error);
-      alert("An error occurred during submission. Please check your network connection.");
+    // 1. Grab the tracking identifier returned by the serverless layer
+    const targetTrackingId = data.transactionId || data.pp_id || data.id;
+    if (!targetTrackingId) {
+      console.error("❌ Synch Error: Tracking token missing from serverless payload.", data);
+      alert("System synchronization error: Tracking ID could not be initialized.");
+      return;
     }
+
+    console.log("🔗 Routing to modern serverless payment flow using token:", targetTrackingId);
+
+    // 2. FIXED: Change this from 'http://localhost:5556/...' to a clean relative path!
+    // This routes the browser cleanly on port 3000 to your Next.js page component.
+    const fullTransferAddress = `/make-payment?token=${targetTrackingId}`;
+    
+    console.log("🚀 Serverless Gateway Redirect Target:", fullTransferAddress);
+    window.location.replace(fullTransferAddress);
+
+  } catch (error) {
+    console.error("❌ Submission process crashed:", error);
+    alert("An error occurred during submission. Please check your network connection.");
+  }
+
   };
 
   const currentYear = new Date().getFullYear();
