@@ -6,8 +6,9 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=frontend",
+    "dev": "npm run dev    --workspace=frontend",
     "build": "npm run build --workspace=frontend",
-    "start": "npm run start --workspace=frontend"
+    "start": "npm run start --workspace=frontend",
+    "generate-gallery": "node scripts/generate-gallery-data.js"
   }
 }

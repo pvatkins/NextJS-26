@@ -7,14 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-gallery": "node scripts/generate-gallery-data.js",
-    "clean": "rm -rf .next"
+    "generate-gallery": "node scripts/generate-gallery-data.js"
   },
   "dependencies": {
     "exif-parser": "^0.1.12",
     "image-size": "^2.0.2",
     "mysql2": "^3.22.3",
-    "next": "^15.4.4",
+    "next": "^15.5.20",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
