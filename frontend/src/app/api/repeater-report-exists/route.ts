@@ -1,16 +1,7 @@
 // frontend/src/app/api/repeater-report-exists/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
-
-const pool = mysql.createPool({
-  host: process.env.MYSQL_SERVER || 'localhost',
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE || 'carcmbrlst_20231017',
-  waitForConnections: true,
-  connectionLimit: 3,
-  queueLimit: 0
-});
+import { pool } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {

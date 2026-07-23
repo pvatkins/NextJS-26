@@ -1,17 +1,7 @@
 // frontend/src/app/api/orders/[orderID]/capture/route.js
 import mysql from 'mysql2/promise';
 import { NextResponse } from 'next/server';
-
-// Initialize the serverless-optimized database connection pool
-const pool = mysql.createPool({
-  host: process.env.MYSQL_SERVER || 'localhost',
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE || 'carcmbrlst_20231017',
-  waitForConnections: true,
-  connectionLimit: 3,
-  queueLimit: 0
-});
+import { pool } from '@/lib/db';
 
 // Helper function to generate an access token from PayPal Sandbox
 async function generateAccessToken() {

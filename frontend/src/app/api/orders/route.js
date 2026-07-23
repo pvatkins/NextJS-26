@@ -1,17 +1,7 @@
 // frontend/src/app/api/orders/route.js
 import mysql from 'mysql2/promise';
 import { NextResponse } from 'next/server';
-
-// 1. Initialize a serverless-optimized database connection pool
-const pool = mysql.createPool({
-  host: process.env.MYSQL_SERVER || 'localhost',
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE || 'carcmbrlst_20231017',
-  waitForConnections: true,
-  connectionLimit: 3, // Low connection limit prevents serverless function exhaustion
-  queueLimit: 0
-});
+import { pool } from '@/lib/db';
 
 // 2. Core token generator rewritten inside the serverless layer
 async function generateAccessToken() {
