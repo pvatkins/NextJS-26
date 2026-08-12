@@ -1,44 +1,96 @@
 // frontend/src/app/api/repeater-report-exists/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
-import { pool } from '@/lib/db';
+
+import { NextRequest, NextResponse } from "next/server";
+import db from "@/lib/sqlite";
+
+interface ReportRow {
+  myindex: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const callsign = searchParams.get('callsign')?.trim().toUpperCase();
-    const dateStr = searchParams.get('date'); // Target audit date (YYYY-MM-DD)
+
+    const callsign = searchParams
+      .get("callsign")
+      ?.trim()
+      .toUpperCase();
+
+    const dateStr = searchParams.get("date");
 
     if (!callsign) {
-      return NextResponse.json({ error: "Missing required 'callsign' tracking parameter" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Missing required 'callsign' tracking parameter",
+        },
+        { status: 400 }
+      );
     }
 
-    console.log(`[Compliance API] Verifying FCC recorded broadcast log presence for: ${callsign} on Date: ${dateStr || 'Latest'}`);
+    console.log(
+      `[Compliance API] Verifying FCC recorded broadcast log presence for: ${callsign} on Date: ${dateStr || "Latest"}`
+    );
 
-    // Adjust table/column names if your compliance audio catalog uses a specific logging layout
-    let queryStr = "SELECT myindex FROM pp_tnx WHERE callsigns = ?";
-    const queryParams: any[] = [callsign];
+    let row: ReportRow | undefined;
 
     if (dateStr) {
-      queryStr += " AND DATE(mydate) = DATE(?)";
-      queryParams.push(dateStr);
+      row = db
+        .prepare(`
+          SELECT myindex
+          FROM pp_tnx
+          WHERE callsigns = ?
+            AND date(mydate) = date(?)
+          ORDER BY myindex DESC
+          LIMIT 1
+        `)
+        .get(callsign, dateStr) as ReportRow | undefined;
+    } else {
+      row = db
+        .prepare(`
+          SELECT myindex
+          FROM pp_tnx
+          WHERE callsigns = ?
+          ORDER BY myindex DESC
+          LIMIT 1
+        `)
+        .get(callsign) as ReportRow | undefined;
     }
 
-    queryStr += " ORDER BY myindex DESC LIMIT 1";
+    const exists = row !== undefined;
 
-    const [rows] = await pool.query<mysql.RowDataPacket[]>(queryStr, queryParams);
-    const exists = rows.length > 0;
+    console.log(
+      `[Compliance API] Verification for ${callsign}: ${
+        exists
+          ? "✅ COMPLIANT LOG RECORDED"
+          : "❌ NO COMPLIANCE RECORD FOUND"
+      }`
+    );
 
-    console.log(`[Compliance API] Verification for ${callsign}: ${exists ? '✅ COMPLIANT LOG RECORDED' : '❌ NO COMPLIANCE RECORD FOUND'}`);
+    return NextResponse.json(
+      {
+        success: true,
+        exists,
+        message: exists
+          ? "Broadcast compliance recording verified."
+          : "Missing required broadcast audio documentation.",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : String(error);
 
-    return NextResponse.json({ 
-      success: true, 
-      exists,
-      message: exists ? "Broadcast compliance recording verified." : "Missing required broadcast audio documentation."
-    }, { status: 200 });
+    console.error(
+      "❌ Critical Failure inside Next.js broadcast compliance check:",
+      message
+    );
 
-  } catch (error: any) {
-    console.error("❌ Critical Failure inside Next.js broadcast compliance check:", error.message);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: message,
+      },
+      { status: 500 }
+    );
   }
 }

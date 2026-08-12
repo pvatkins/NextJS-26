@@ -1,11 +1,15 @@
 // frontend/src/app/api/getFullName/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
-import { pool } from '@/lib/db';
+import db from "@/lib/sqlite";
+import { NextRequest, NextResponse } from "next/server";
 
 // Explicit interface matching the incoming body expectation
 interface LookupRequestBody {
   callsigns?: string[];
+}
+
+interface NameRow {
+  Callsign: string;
+  FullName: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -14,37 +18,68 @@ export async function POST(request: NextRequest) {
     const { callsigns } = body;
 
     if (!callsigns || !Array.isArray(callsigns) || callsigns.length === 0) {
-      return NextResponse.json({ error: "Invalid payload. 'callsigns' must be a non-empty array." }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "Invalid payload. 'callsigns' must be a non-empty array.",
+        },
+        { status: 400 }
+      );
     }
 
-    console.log(`[Serverless API] Executing batch name lookup for: ${callsigns.join(', ')}`);
-
-    // Fire exactly ONE optimized SQL IN() query to fetch all relevant records
-    const [rows] = await pool.query<mysql.RowDataPacket[]>(
-      "SELECT Callsign, FullName FROM merged WHERE Callsign IN (?)",
-      [callsigns]
+    console.log(
+      `[SQLite API] Executing batch name lookup for: ${callsigns.join(", ")}`
     );
 
-    // Build the clean key-value dictionary mapping
+    // SQLite requires one ? placeholder for each value.
+    //
+    // Example:
+    // WHERE Callsign IN (?, ?, ?)
+    const placeholders = callsigns.map(() => "?").join(",");
+
+    const statement = db.prepare(`
+      SELECT Callsign, FullName
+      FROM merged
+      WHERE Callsign IN (${placeholders})
+    `);
+
+    const rows = statement.all(...callsigns) as NameRow[];
+
+    // Build the key-value dictionary mapping.
     const resultsMap: Record<string, string> = {};
-    
-    // Seed map with UNKNOWN fallbacks
-    callsigns.forEach(call => {
+
+    // Seed map with UNKNOWN fallbacks.
+    callsigns.forEach((call) => {
       resultsMap[call.toUpperCase()] = "UNKNOWN";
     });
 
-    // Overwrite with actual hits from the database rows
-    rows.forEach(row => {
+    // Overwrite with actual database hits.
+    rows.forEach((row) => {
       if (row.Callsign && row.FullName) {
         resultsMap[row.Callsign.toUpperCase()] = row.FullName.trim();
       }
     });
 
-    console.log("✅ Batch lookup completed successfully. Returning matrix mapping data.");
-    return NextResponse.json({ results: resultsMap }, { status: 200 });
+    console.log(
+      "✅ SQLite batch lookup completed successfully."
+    );
 
-  } catch (error: any) {
-    console.error("❌ Critical Failure inside Next.js /api/getFullName route:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { results: resultsMap },
+      { status: 200 }
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : String(error);
+
+    console.error(
+      "❌ Critical failure inside /api/getFullName:",
+      message
+    );
+
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
   }
 }
