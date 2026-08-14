@@ -26,7 +26,7 @@ interface TransactionRow {
 export async function GET(request: NextRequest) {
   try {
     console.log(
-      "[SQLite API] Fetching last 10 historical transaction logs from pp_tnx..."
+      "[SQLite API] Fetching last 12 historical transaction logs from pp_tnx..."
     );
 
     const rows = db
@@ -50,8 +50,9 @@ export async function GET(request: NextRequest) {
           pp_id,
           pp_total
         FROM pp_tnx
+        WHERE transaction_status = 'posted'
         ORDER BY myindex DESC
-        LIMIT 10
+        LIMIT 12
       `)
       .all() as TransactionRow[];
 
