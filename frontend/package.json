@@ -11,6 +11,7 @@
     "generate-gallery": "node scripts/generate-gallery-data.js"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
     "exif-parser": "^0.1.12",
     "image-size": "^2.0.2",
     "mysql2": "^3.22.3",
@@ -19,8 +20,7 @@
     "react-dom": "^19.0.0",
     "react-photo-album": "^3.6.0",
     "styled-jsx": "^5.1.7",
-    "yet-another-react-lightbox": "^3.32.1",
-    "better-sqlite3": "^13.0.3"
+    "yet-another-react-lightbox": "^3.32.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -34,6 +34,6 @@
     "eslint-config-next": "15.3.5",
     "postcss": "^8",
     "tailwindcss": "^4",
-    "typescript": "^6.0.3"
+    "typescript": "^5.9.3"
   }
 }
