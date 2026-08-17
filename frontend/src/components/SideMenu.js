@@ -58,7 +58,8 @@ const SideMenu = () => {
     },
     sep("carc_separator_2"),
     { name: "Test Get Full Name", path: "/test-get-full-name" },
-    { name: "Test Get Last Entries", path: "/test-get-last-entries" },
+    { name: "Test Get Last Entries", path: "/test-get-last-entries"},
+    { name: "Browse/Edit Members", path: "/members"},
     
     sep("carc_separator_3"),
     /* The original menu items created at the start of the project

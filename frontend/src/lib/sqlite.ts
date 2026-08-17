@@ -9,4 +9,7 @@ const dbPath =
 
 const db = new Database(dbPath);
 
+// Enable WAL mode for better concurrency
+db.pragma ('journal_mode = WAL')
+
 export default db;
