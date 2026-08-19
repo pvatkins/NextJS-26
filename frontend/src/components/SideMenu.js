@@ -58,9 +58,9 @@ const SideMenu = () => {
     },
     sep("carc_separator_2"),
     { name: "Test Get Full Name", path: "/test-get-full-name" },
-    { name: "Test Get Last Entries", path: "/test-get-last-entries"},
-    { name: "Browse/Edit Members", path: "/members"},
-    
+    { name: "Test Get Last Entries", path: "/test-get-last-entries" },
+    { name: "Browse/Edit Members", path: "/members" },
+
     sep("carc_separator_3"),
     /* The original menu items created at the start of the project
     { name: "Home", path: "/" },
@@ -68,7 +68,7 @@ const SideMenu = () => {
     { name: "Our Services", path: "/services" },
      */
     { name: "How It Works", path: "/how-it-works" },
-    
+
   ];
 
   return (
@@ -80,7 +80,7 @@ const SideMenu = () => {
           if (item.type === "separator") {
             return (
               <li key={key} className="my-4">
-                <hr className="border-t border-gray-400" />
+                <hr className="border-t border-blue-900" />
               </li>
             );
           } else if (item.type === "pdf") {
@@ -101,11 +101,10 @@ const SideMenu = () => {
               <li key={key}>
                 <Link
                   href={item.path}
-                  className={`block p-2 rounded transition ${
-                    pathname === item.path
+                  className={`block p-2 rounded transition ${pathname === item.path
                       ? "bg-blue-500 text-white"
                       : "hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {item.name}
                 </Link>
