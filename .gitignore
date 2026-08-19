@@ -67,4 +67,20 @@ dist/
 .DS_Store
 Thumbs.db
 
-frontend/data/carc.db
+# Production SQLite database and runtime files
+frontend/data/*.db
+frontend/data/*.db-wal
+frontend/data/*.db-shm
+frontend/data/*.db-journal
+
+#Locally generated backups
+frontend/backups/
+
+# Private keys
+*.pem
+
+# Local database exports
+/dump.sql
+/backup.sql
+
+
