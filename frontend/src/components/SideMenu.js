@@ -79,9 +79,11 @@ const SideMenu = () => {
 
           if (item.type === "separator") {
             return (
-              <li key={key} className="my-4">
-                <hr className="border-t border-blue-900" />
-              </li>
+              <li
+                key={key}
+                className="my-3 h-1 rounded bg-blue-900"
+                aria-hidden="true"
+              />
             );
           } else if (item.type === "pdf") {
             return (
@@ -102,8 +104,8 @@ const SideMenu = () => {
                 <Link
                   href={item.path}
                   className={`block p-2 rounded transition ${pathname === item.path
-                      ? "bg-blue-500 text-white"
-                      : "hover:bg-gray-200"
+                    ? "bg-blue-500 text-white"
+                    : "hover:bg-gray-200"
                     }`}
                 >
                   {item.name}
