@@ -1,4 +1,4 @@
-//frontend/src/app/members/sctions.ts
+//frontend/src/app/members/actions.ts
 'use server';
 
 import db from '@/lib/sqlite';
@@ -54,6 +54,40 @@ export async function getMembers(search: string = ''): Promise<Member[]> {
   return db.prepare('SELECT * FROM members ORDER BY LastName, FirstName').all() as Member[];
 }
 
+type StoredMember = Member & { ID: number };
+
+const getMemberByID = db.prepare(`
+  SELECT * FROM members WHERE ID = ?
+`);
+
+const insertAuditEntry = db.prepare(`
+  INSERT INTO members_audit_log (
+    Operation,
+    MemberID,
+    CallSign,
+    OldValues,
+    NewValues,
+    ChangedVia
+  ) VALUES (
+    @Operation,
+    @MemberID,
+    @CallSign,
+    @OldValues,
+    @NewValues,
+    'website'
+  )
+`);
+
+function getStoredMember(id: number): StoredMember {
+  const member = getMemberByID.get(id) as StoredMember | undefined;
+
+  if (!member) {
+    throw new Error(`Member ID ${id} was not found.`);
+  }
+
+  return member;
+}
+
 export async function saveMember(formData: FormData) {
   const id = formData.get('ID') ? Number(formData.get('ID')) : null;
 
@@ -93,45 +127,116 @@ export async function saveMember(formData: FormData) {
     Packet: (formData.get('Packet') as string) || ''
   };
 
-  if (id) {
-    // Update existing member
-    const stmt = db.prepare(`
-      UPDATE members SET
-        CallSign = @CallSign, LicenseClass = @LicenseClass, CARCOfficer = @CARCOfficer,
-        FirstName = @FirstName, LastName = @LastName, Address = @Address, Apt_Suite = @Apt_Suite,
-        City = @City, State = @State, ZIP = @ZIP, HomePhone = @HomePhone, CellPhone = @CellPhone,
-        CellTxt = @CellTxt, Email1 = @Email1, Email2 = @Email2, CARCMember = @CARCMember,
-        Active = @Active, Inactive = @Inactive, DuesDue = @DuesDue, DuesPaid = @DuesPaid,
-        DatePaid = @DatePaid, LastPaid = @LastPaid, NextDue = @NextDue, AmountPaid = @AmountPaid,
-        YrsLicensed = @YrsLicensed, MemberSince = @MemberSince, DonateTo = @DonateTo,
-        DonationAmt = @DonationAmt, ARRL = @ARRL, ARES = @ARES, RACES = @RACES, CERT = @CERT,
-        Packet = @Packet
-      WHERE ID = @id
-    `);
-    stmt.run({ ...data, id });
+  if (id !== null) {
+    const updateMember = db.prepare(`
+    UPDATE members SET
+      CallSign = @CallSign, LicenseClass = @LicenseClass, CARCOfficer = @CARCOfficer,
+      FirstName = @FirstName, LastName = @LastName, Address = @Address, Apt_Suite = @Apt_Suite,
+      City = @City, State = @State, ZIP = @ZIP, HomePhone = @HomePhone, CellPhone = @CellPhone,
+      CellTxt = @CellTxt, Email1 = @Email1, Email2 = @Email2, CARCMember = @CARCMember,
+      Active = @Active, Inactive = @Inactive, DuesDue = @DuesDue, DuesPaid = @DuesPaid,
+      DatePaid = @DatePaid, LastPaid = @LastPaid, NextDue = @NextDue, AmountPaid = @AmountPaid,
+      YrsLicensed = @YrsLicensed, MemberSince = @MemberSince, DonateTo = @DonateTo,
+      DonationAmt = @DonationAmt, ARRL = @ARRL, ARES = @ARES, RACES = @RACES, CERT = @CERT,
+      Packet = @Packet
+    WHERE ID = @id
+  `);
+
+    const updateTransaction = db.transaction(() => {
+      const before = getStoredMember(id);
+      const result = updateMember.run({ ...data, id });
+
+      if (result.changes !== 1) {
+        throw new Error(
+          `Expected to update one member, but updated ${result.changes}.`
+        );
+      }
+
+      const after = getStoredMember(id);
+
+      insertAuditEntry.run({
+        Operation: 'UPDATE',
+        MemberID: id,
+        CallSign: after.CallSign,
+        OldValues: JSON.stringify(before),
+        NewValues: JSON.stringify(after)
+      });
+    });
+
+    updateTransaction();
   } else {
-    // Insert new member
-    const stmt = db.prepare(`
-      INSERT INTO members (
-        CallSign, LicenseClass, CARCOfficer, FirstName, LastName, Address, Apt_Suite,
-        City, State, ZIP, HomePhone, CellPhone, CellTxt, Email1, Email2,
-        CARCMember, Active, Inactive, DuesDue, DuesPaid, DatePaid, LastPaid, NextDue,
-        AmountPaid, YrsLicensed, MemberSince, DonateTo, DonationAmt, ARRL, ARES, RACES, CERT, Packet
-      ) VALUES (
-        @CallSign, @LicenseClass, @CARCOfficer, @FirstName, @LastName, @Address, @Apt_Suite,
-        @City, @State, @ZIP, @HomePhone, @CellPhone, @CellTxt, @Email1, @Email2,
-        @CARCMember, @Active, @Inactive, @DuesDue, @DuesPaid, @DatePaid, @LastPaid, @NextDue,
-        @AmountPaid, @YrsLicensed, @MemberSince, @DonateTo, @DonationAmt, @ARRL, @ARES, @RACES, @CERT, @Packet
-      )
-    `);
-    stmt.run(data);
+    const insertMember = db.prepare(`
+    INSERT INTO members (
+      ID, CallSign, LicenseClass, CARCOfficer, FirstName, LastName, Address, Apt_Suite,
+      City, State, ZIP, HomePhone, CellPhone, CellTxt, Email1, Email2,
+      CARCMember, Active, Inactive, DuesDue, DuesPaid, DatePaid, LastPaid, NextDue,
+      AmountPaid, YrsLicensed, MemberSince, DonateTo, DonationAmt,
+      ARRL, ARES, RACES, CERT, Packet
+    ) VALUES (
+      @ID, @CallSign, @LicenseClass, @CARCOfficer, @FirstName, @LastName, @Address,
+      @Apt_Suite, @City, @State, @ZIP, @HomePhone, @CellPhone, @CellTxt, @Email1,
+      @Email2, @CARCMember, @Active, @Inactive, @DuesDue, @DuesPaid, @DatePaid,
+      @LastPaid, @NextDue, @AmountPaid, @YrsLicensed, @MemberSince, @DonateTo,
+      @DonationAmt, @ARRL, @ARES, @RACES, @CERT, @Packet
+    )
+  `);
+
+    const insertTransaction = db.transaction(() => {
+      const nextIDRow = db.prepare(`
+      SELECT COALESCE(MAX(ID), 0) + 1 AS NextID
+      FROM members
+    `).get() as { NextID: number };
+
+      const newID = nextIDRow.NextID;
+      const result = insertMember.run({ ID: newID, ...data });
+
+      if (result.changes !== 1) {
+        throw new Error(
+          `Expected to insert one member, but inserted ${result.changes}.`
+        );
+      }
+
+      const after = getStoredMember(newID);
+
+      insertAuditEntry.run({
+        Operation: 'INSERT',
+        MemberID: newID,
+        CallSign: after.CallSign,
+        OldValues: null,
+        NewValues: JSON.stringify(after)
+      });
+    });
+
+    insertTransaction();
   }
 
   revalidatePath('/members');
 }
 
 export async function deleteMember(id: number) {
-  const stmt = db.prepare('DELETE FROM members WHERE ID = ?');
-  stmt.run(id);
+  const deleteStatement = db.prepare(`
+    DELETE FROM members WHERE ID = ?
+  `);
+
+  const deleteTransaction = db.transaction(() => {
+    const before = getStoredMember(id);
+    const result = deleteStatement.run(id);
+
+    if (result.changes !== 1) {
+      throw new Error(
+        `Expected to delete one member, but deleted ${result.changes}.`
+      );
+    }
+
+    insertAuditEntry.run({
+      Operation: 'DELETE',
+      MemberID: id,
+      CallSign: before.CallSign,
+      OldValues: JSON.stringify(before),
+      NewValues: null
+    });
+  });
+
+  deleteTransaction();
   revalidatePath('/members');
 }
