@@ -72,7 +72,7 @@ const SideMenu = () => {
   ];
 
   return (
-    <nav className="w-64 bg-gray-100 p-4 shadow-lg h-full">
+    <nav className="w-64 font-semibold bg-gray-100 p-4 shadow-lg h-full">
       <ul className="space-y-0">
         {menuItems.map((item) => {
           const key = item.type === "separator" ? item.id : item.name;
