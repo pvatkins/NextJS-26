@@ -72,7 +72,7 @@ const SideMenu = () => {
   ];
 
   return (
-    <nav className="w-64 font-semibold bg-gray-100 p-4 shadow-lg h-full">
+    <nav className="w-64 font-semibold bg-gray-100 text-gray-900 p-4 shadow-lg h-full">
       <ul className="space-y-0">
         {menuItems.map((item) => {
           const key = item.type === "separator" ? item.id : item.name;
@@ -105,7 +105,7 @@ const SideMenu = () => {
                   href={item.path}
                   className={`block p-2 rounded transition ${pathname === item.path
                     ? "bg-blue-500 text-white"
-                    : "hover:bg-gray-200"
+                    : "text-gray-900 hover:bg-gray-200"
                     }`}
                 >
                   {item.name}
