@@ -72,18 +72,16 @@ const SideMenu = () => {
   ];
 
   return (
-    <nav className="w-64 font-semibold bg-gray-100 text-gray-900 p-4 shadow-lg h-full">
+    <nav className="w-64 bg-gray-100 text-gray-900 p-4 shadow-lg h-full">
       <ul className="space-y-0">
         {menuItems.map((item) => {
           const key = item.type === "separator" ? item.id : item.name;
 
           if (item.type === "separator") {
             return (
-              <li
-                key={key}
-                className="my-3 h-1 rounded bg-blue-900"
-                aria-hidden="true"
-              />
+              <li key={key} className="my-4">
+                <hr className="border-t border-gray-600" />
+              </li>
             );
           } else if (item.type === "pdf") {
             return (

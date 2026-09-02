@@ -60,7 +60,7 @@ export default function TestGetLastEntries() {
           <p className="font-bold">
             Details record for the last {results.length} rows of the <code>pp_tnx</code> table
           </p>
-          <table className="w-full table-auto border-collapse border border-gray-400 mt-6">
+          <table className="w-full text-gray-900 table-auto border-collapse border border-gray-400 mt-6">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border px-2 py-1">indx</th>

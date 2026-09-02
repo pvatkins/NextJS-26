@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/test-get-full-name/:path*",
-    "/testGetLastEntries/:path*",
+    "/test-get-last-entries/:path*",
     "/members/:path*",
   ],
 };
