@@ -1,45 +1,47 @@
 // frontend/src/middleware.ts
-import { NextResponse, NextRequest } from 'next/server';
+
+import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
 
   if (authHeader) {
-    try {
-      // 1. Properly split and extract ONLY the base64 token string array item
-      const tokenSegments = authHeader.split(' ');
-      const base64Token = tokenSegments[1];
+    const [scheme, encodedCredentials] = authHeader.split(' ');
 
-      // 2. Safely decode the raw base64 credentials text string layout
-      const decodedString = atob(base64Token);
-      const [username, password] = decodedString.split(':');
+    if (scheme === 'Basic' && encodedCredentials) {
+      const decodedCredentials = atob(encodedCredentials);
 
-      const secureUser = process.env.ADMIN_DIAGNOSTIC_USER;
-      const securePass = process.env.ADMIN_DIAGNOSTIC_PASS;
+      // Split only at the first colon so a password may contain colons.
+      const separatorIndex = decodedCredentials.indexOf(':');
 
-      if (username === secureUser && password === securePass) {
-        return NextResponse.next();
+      if (separatorIndex !== -1) {
+        const username = decodedCredentials.substring(0, separatorIndex);
+        const password = decodedCredentials.substring(separatorIndex + 1);
+
+        if (
+          username === process.env.ADMIN_DIAGNOSTIC_USER &&
+          password === process.env.ADMIN_DIAGNOSTIC_PASS
+        ) {
+          return NextResponse.next();
+        }
       }
-    } catch (e) {
-      console.error("❌ Middleware credentials parsing failed:", e);
     }
   }
 
-  // Trigger browser's native login prompt modal on credential miss
-  return new NextResponse('Authentication Required.', {
+  // No valid credentials:
+  // cause the browser to display its native Basic Authentication dialog.
+  return new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Secure Diagnostic Portal"',
+      'WWW-Authenticate': 'Basic realm="CARC Restricted Area"',
     },
   });
 }
 
-// 3. Optimized Matcher Matrix
-// Keeps public pages open while locking admin tools completely down
 export const config = {
   matcher: [
-    '/test-get-full-name',
-    '/test-get-last-entries',
-    '/members',
+    '/test-get-full-name/:path*',
+    '/test-get-last-entries/:path*',
+    '/members/:path*',
   ],
 };
