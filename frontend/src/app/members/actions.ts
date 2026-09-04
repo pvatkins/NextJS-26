@@ -54,6 +54,20 @@ export async function getMembers(search: string = ''): Promise<Member[]> {
   return db.prepare('SELECT * FROM members ORDER BY LastName, FirstName').all() as Member[];
 }
 
+export interface MemberCounts {
+  total: number;
+  active: number;
+}
+
+export async function getMemberCounts(): Promise<MemberCounts> {
+  return db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN Active = 1 THEN 1 ELSE 0 END) AS active
+    FROM members
+  `).get() as MemberCounts;
+}
+
 type StoredMember = Member & { ID: number };
 
 const getMemberByID = db.prepare(`
