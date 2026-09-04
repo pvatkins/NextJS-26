@@ -81,11 +81,10 @@ export default function TestGetLastEntries() {
             <tbody>
               {results.map((r, i) => {
 
-
                 const rowColor = i % 2 === 0 ? "bg-yellow-100" : "bg-blue-100";
 
                 return (
-                  <tr key={i} className={rowColor}>
+                  <tr key={i} className={`${rowColor} text-gray-900`}>
                     <td className="border px-2 py-1">{r.myindex}</td>
                     <td className="border px-2 py-1">{r.mydate}</td>
                     <td className="border px-2 py-1">{r.callsigns}</td>
@@ -106,13 +105,16 @@ export default function TestGetLastEntries() {
         </div>
       )}
 
-
       {/* Second table */}
       <div>
-        <p className="font-bold">Tracking record for the last {results.length} rows of the <code>pp_tnx</code> table</p>
-        <table className="w-full border-collapse border border-gray-400 mt-6">
+        <p className="font-bold text-gray-900">
+          Tracking record for the last {results.length} rows of the{" "}
+          <code>pp_tnx</code> table
+        </p>
+
+        <table className="w-full table-auto border-collapse border border-gray-400 mt-6 text-gray-900">
           <thead>
-            <tr className="bg-gray-100">
+            <tr className="bg-gray-100 text-gray-900">
               <th className="border px-2 py-1 text-right">indx</th>
               <th className="border px-2 py-1">pp_id</th>
               <th className="border px-2 py-1">pp_orderID</th>
@@ -122,17 +124,27 @@ export default function TestGetLastEntries() {
               <th className="border px-2 py-1 text-right">club_receives</th>
             </tr>
           </thead>
+
           <tbody>
             {results.map((r, i) => (
-              <tr key={i}
-                className={i % 2 === 0 ? "bg-yellow-100" : "bg-blue-100"}>
+              <tr
+                key={i}
+                className={`${i % 2 === 0 ? "bg-yellow-100" : "bg-blue-100"
+                  } text-gray-900`}
+              >
                 <td className="border px-2 py-1 text-right">{r.myindex}</td>
                 <td className="border px-2 py-1">{r.pp_id}</td>
                 <td className="border px-2 py-1">{r.pp_orderID}</td>
-                <td className="border px-2 py-1 text-right">{r.transaction_status}</td>
-                <td className="border px-2 py-1 text-right">{fmtAmt(r.pp_total)}</td>
+                <td className="border px-2 py-1">
+                  {r.transaction_status}
+                </td>
+                <td className="border px-2 py-1 text-right">
+                  {fmtAmt(r.pp_total)}
+                </td>
                 <td className="border px-2 py-1 text-right">{r.paypalfee}</td>
-                <td className="border px-2 py-1 text-right">{r.clubreceives}</td>
+                <td className="border px-2 py-1 text-right">
+                  {r.clubreceives}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -141,4 +153,3 @@ export default function TestGetLastEntries() {
     </main>
   )
 }
-

@@ -105,8 +105,8 @@ export default function MembersPage() {
 
       {/* Roster Table */}
       <div className="overflow-x-auto border rounded shadow-sm">
-        <table className="w-full text-left border-collapse text-sm">
-          <thead className="bg-gray-100 border-b">
+        <table className="w-full text-left text-gray-90 border-collapse text-sm">
+          <thead className="bg-green-900 border-b">
             <tr>
               <th className="p-3">Call Sign</th>
               <th className="p-3">Name</th>
@@ -127,7 +127,7 @@ export default function MembersPage() {
               </tr>
             ) : (
               members.map((m) => (
-                <tr key={m.ID} className="border-b hover:bg-gray-50">
+                <tr key={m.ID} className="border-b hover:bg-gray-100 hover:text-black">
                   <td className="p-3 font-semibold">{m.CallSign || '—'}</td>
                   <td className="p-3">{`${m.FirstName} ${m.LastName}`}</td>
                   <td className="p-3">{m.LicenseClass}</td>
@@ -160,7 +160,7 @@ export default function MembersPage() {
       {
         isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 w-full text-gray-900 max-w-3xl max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">
                 {selectedMember ? 'Edit Member' : 'Add New Member'}
               </h2>
