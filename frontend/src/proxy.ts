@@ -1,8 +1,10 @@
 // frontend/src/proxy.ts
 
-import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export default function proxy(request: NextRequest) {
   const authorization = request.headers.get("authorization");
 
   if (authorization) {
@@ -30,7 +32,8 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return new NextResponse("Authentication required.", {
+  // No credentials, malformed credentials, or incorrect credentials.
+  return new NextResponse("Authentication required. See Board Officer for access.", {
     status: 401,
     headers: {
       "WWW-Authenticate": 'Basic realm="CARC Administration"',
@@ -46,3 +49,4 @@ export const config = {
     "/members/:path*",
   ],
 };
+
