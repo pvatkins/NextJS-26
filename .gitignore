@@ -31,6 +31,7 @@ yarn-error.log*
 .next/
 out/
 .next-cache/
+next-env.d.ts
 
 #Logs
 *.log
