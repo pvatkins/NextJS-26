@@ -57,9 +57,9 @@ const SideMenu = () => {
       url: "/documents/CARC_Constitution_and_Bylaws_08-27-2025.pdf",
     },
     sep("carc_separator_2"),
-    { name: "Test Get Full Name", path: "/test-get-full-name" },
-    { name: "Test Get Last Entries", path: "/test-get-last-entries" },
-    { name: "Browse/Edit Members", path: "/members" },
+    { name: "Test Get Full Name", path: "/test-get-full-name", prefetch: false },
+    { name: "Test Get Last Entries", path: "/test-get-last-entries", prefetch: false },
+    { name: "Browse/Edit Members", path: "/members", prefetch: false },
 
     sep("carc_separator_3"),
     /* The original menu items created at the start of the project

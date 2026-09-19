@@ -1,8 +1,6 @@
 // frontend/src/proxy.ts
-
-
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export default function proxy(request: NextRequest) {
   const authorization = request.headers.get("authorization");
