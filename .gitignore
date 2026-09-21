@@ -85,3 +85,5 @@ frontend/backups/
 /backup.sql
 
 
+
+frontend/stashed.env.local

@@ -9,7 +9,7 @@ async function generateAccessToken() {
 
   const baseUrl =
     process.env.PAYPAL_BASE_URL?.trim() ||
-    "https://api-m.sandbox.paypal.com";
+    "https://api-m.paypal.com";
 
   if (!clientId || !clientSecret) {
     throw new Error(
@@ -83,7 +83,7 @@ export async function POST(request) {
 
     const baseUrl =
       process.env.PAYPAL_BASE_URL?.trim() ||
-      "https://api-m.sandbox.paypal.com";
+      "https://api-m.paypal.com";
 
     const verifiedPrice =
       parseFloat(row.pp_total).toFixed(2);

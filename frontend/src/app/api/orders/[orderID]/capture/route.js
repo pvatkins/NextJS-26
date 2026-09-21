@@ -3,14 +3,14 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/sqlite";
 
-// Helper function to generate an access token from PayPal Sandbox
+// Helper function to generate an access token from PayPal
 async function generateAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID?.trim();
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET?.trim();
 
   const baseUrl =
     process.env.PAYPAL_BASE_URL?.trim() ||
-    "https://api-m.sandbox.paypal.com";
+    "https://api-m.paypal.com";
 
   if (!clientId || !clientSecret) {
     throw new Error(
@@ -68,7 +68,7 @@ export async function POST(request, { params }) {
 
     const baseUrl =
       process.env.PAYPAL_BASE_URL?.trim() ||
-      "https://api-m.sandbox.paypal.com";
+      "https://api-m.paypal.com";
 
     const response = await fetch(
       `${baseUrl}/v2/checkout/orders/${orderID}/capture`,
