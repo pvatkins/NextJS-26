@@ -101,6 +101,7 @@ const SideMenu = () => {
               <li key={key}>
                 <Link
                   href={item.path}
+                  prefetch={item.prefetch}
                   className={`block p-2 rounded transition ${pathname === item.path
                     ? "bg-blue-500 text-white"
                     : "text-gray-900 hover:bg-gray-200"
