@@ -35,8 +35,8 @@ const ADDITIONAL_MEMBER_FEE = 3.00;
 const DEFAULT_FULLNAME = "U N D E F I N E D";
 
 // API Endpoints - Replace with your actual Next.js API routes
-const FULL_NAME_API_URL = 'http://localhost:3000/api/getFullName'; // Example: /api/getFullName.js
-const RECEPTOR_API_URL = 'http://localhost:3000/api/submitDues'; // Example: /api/submitDues.js
+const FULL_NAME_API_URL = '/api/getFullName'; // Example: /api/getFullName.js
+const RECEPTOR_API_URL = '/api/submitDues'; // Example: /api/submitDues.js
 
 function CarcPayPalDues() {
   const [selectedYears, setSelectedYears] = useState(() => {
@@ -262,7 +262,7 @@ function CarcPayPalDues() {
       alert("Callsign(s) cannot be empty.");
       return;
     }
-
+    console.log(`pending callsign is ${formData.callsign}`);
     try {
       const fullName = await getFullNameFromMergeTable(formData.callsign);
       console.log("DEBUG - Resolved full name for callsign:", fullName);
@@ -289,27 +289,27 @@ function CarcPayPalDues() {
 
       const data = await response.json();
 
-    // 1. Grab the tracking identifier returned by the serverless layer
-    const targetTrackingId = data.transactionId || data.pp_id || data.id;
-    if (!targetTrackingId) {
-      console.error("❌ Synch Error: Tracking token missing from serverless payload.", data);
-      alert("System synchronization error: Tracking ID could not be initialized.");
-      return;
+      // 1. Grab the tracking identifier returned by the serverless layer
+      const targetTrackingId = data.transactionId || data.pp_id || data.id;
+      if (!targetTrackingId) {
+        console.error("❌ Synch Error: Tracking token missing from serverless payload.", data);
+        alert("System synchronization error: Tracking ID could not be initialized.");
+        return;
+      }
+
+      console.log("🔗 Routing to modern serverless payment flow using token:", targetTrackingId);
+
+      // 2. FIXED: Change this from 'http://localhost:5556/...' to a clean relative path!
+      // This routes the browser cleanly on port 3000 to your Next.js page component.
+      const fullTransferAddress = `/make-payment?token=${targetTrackingId}`;
+
+      console.log("🚀 Serverless Gateway Redirect Target:", fullTransferAddress);
+      window.location.replace(fullTransferAddress);
+
+    } catch (error) {
+      console.error("❌ Submission process crashed:", error);
+      alert("An error occurred during submission. Please check your network connection.");
     }
-
-    console.log("🔗 Routing to modern serverless payment flow using token:", targetTrackingId);
-
-    // 2. FIXED: Change this from 'http://localhost:5556/...' to a clean relative path!
-    // This routes the browser cleanly on port 3000 to your Next.js page component.
-    const fullTransferAddress = `/make-payment?token=${targetTrackingId}`;
-    
-    console.log("🚀 Serverless Gateway Redirect Target:", fullTransferAddress);
-    window.location.replace(fullTransferAddress);
-
-  } catch (error) {
-    console.error("❌ Submission process crashed:", error);
-    alert("An error occurred during submission. Please check your network connection.");
-  }
 
   };
 
