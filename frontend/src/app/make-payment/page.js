@@ -3,6 +3,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { withBasePath } from '@/lib/basePath';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -23,9 +24,8 @@ function CheckoutContent() {
 
     console.log(`[Client] Retrieved tracking token: ${token}`);
 
-    
     const scriptId = "paypal-sdk-script";
-    let script = document.getElementById(scriptId);
+    let cancelled = false;
 
     const initializePayPalButtons = () => {
       if (buttonsRendered.current) return;
@@ -42,63 +42,124 @@ function CheckoutContent() {
         // Call your brand new Next.js Serverless Order Creation API
         createOrder: async () => {
           try {
-            const res = await fetch("/api/orders", {
+            const res = await fetch(withBasePath("/api/orders"), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ trackingToken: token }),
             });
-            if (!res.ok) throw new Error("Backend failed to initialize transaction order.");
-            const orderData = await res.json();
+            const orderData = await res.json().catch(() => ({}));
+            if (!res.ok || !orderData.id) {
+              throw new Error(orderData.error || "Backend failed to initialize transaction order.");
+            }
             return orderData.id;
           } catch (err) {
-            console.error(err);
-            alert("Order creation failed. Please try again.");
+            console.warn("Order creation failed:", err);
+            setError(`Order creation failed: ${err.message}`);
+            // Rethrow so the PayPal SDK aborts cleanly instead of receiving an undefined order ID.
+            throw err;
           }
         },
 
         // Call your brand new Next.js Serverless Order Capture API on Approval
         onApprove: async (data) => {
           try {
-            const res = await fetch(`/api/orders/${data.orderID}/capture`, {
+            const res = await fetch(withBasePath(`/api/orders/${data.orderID}/capture`), {
               method: "POST",
               headers: { "Content-Type": "application/json" },
             });
             if (!res.ok) throw new Error("Backend network error during transaction capture.");
 
-            // Redirect smoothly to your success route
-            router.push("/paypal-success");
+            const captureData = await res.json();
+
+            if (captureData.status === "COMPLETED") {
+              router.push(withBasePath("/paypal-success"));
+            } else {
+              console.warn("PayPal capture did not complete:", captureData);
+              router.push(withBasePath("/paypal-cancel"));
+            }
           } catch (err) {
             console.error(err);
             alert("Payment capture failed. Your bank statement has not been billed.");
           }
         },
 
+        onCancel: async (data) => {
+          console.log("[PayPal Client] Payment cancelled by user:", data);
+          try {
+            await fetch(withBasePath("/api/orders/cancel"), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderID: data?.orderID,
+                trackingToken: token,
+              }),
+            });
+          } catch (err) {
+            console.error("Failed to update cancel status:", err);
+          }
+          router.push(withBasePath("/paypal-cancel"));
+        },
+
         onError: (err) => {
-          console.error("PayPal Smart Button Error:", err);
+          console.warn("PayPal Smart Button Error:", err);
           setError("An authorization failure occurred inside the gateway panel.");
         }
-      }).render(paypalContainerRef.current);
+      }).render(paypalContainerRef.current).catch((err) => {
+        console.warn("PayPal Buttons render failed:", err);
+        buttonsRendered.current = false;
+        setError("PayPal buttons could not be displayed. Please reload the page.");
+      });
 
       buttonsRendered.current = true;
     };
 
 
-console.log(`[Client] Initializing PayPal Buttons for tracking token: ${token}`); 
+    const loadPayPal = async () => {
+      const configResponse = await fetch(withBasePath("/api/paypal-config"));
+      if (!configResponse.ok) {
+        throw new Error("PayPal client ID is not configured.");
+      }
 
-if (!script) {
-  script = document.createElement("script");
-  
-  // ✅ FIXED: Added the complete /sdk/js path and the missing '$' for the variable injection
-  script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`;
-  
-  script.id = scriptId;
-  script.async = true;
-  script.onload = initializePayPalButtons;
-  document.body.appendChild(script);
-} else {
-  initializePayPalButtons();
-}
+      const { clientId, environment } = await configResponse.json();
+      if (cancelled) return;
+      // Looked up after the await so a strict-mode double effect doesn't inject the SDK twice.
+      let script = document.getElementById(scriptId);
+      console.log(`[Client] Initializing PayPal Buttons for tracking token: ${token}`);
 
+      if (!script) {
+        script = document.createElement("script");
+        const paypalHost = environment === "sandbox"
+          ? "www.sandbox.paypal.com"
+          : "www.paypal.com";
+        script.src = `https://${paypalHost}/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD`;
+        script.id = scriptId;
+        script.async = true;
+        script.onload = initializePayPalButtons;
+        script.onerror = () => {
+          setError("PayPal SDK could not be loaded.");
+          setLoading(false);
+        };
+        document.body.appendChild(script);
+      } else if (window.paypal) {
+        initializePayPalButtons();
+      } else {
+        script.addEventListener("load", initializePayPalButtons, { once: true });
+        script.addEventListener("error", () => {
+          setError("PayPal SDK could not be loaded.");
+          setLoading(false);
+        }, { once: true });
+      }
+    };
+
+    loadPayPal().catch((err) => {
+      console.error(err);
+      setError("PayPal client ID is not configured.");
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [token, router]);
 
   return (
