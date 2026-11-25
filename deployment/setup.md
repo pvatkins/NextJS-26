@@ -2,6 +2,54 @@
 
 Deploys the app on a single Ubuntu Lightsail instance: Node.js app under systemd, nginx reverse proxy, optional Let's Encrypt HTTPS, hourly SQLite backups.
 
+**New (v2.0):** This setup now follows production-standard multi-admin architecture with proper group-based access control. See **[MULTI_ADMIN_SETUP.md](./MULTI_ADMIN_SETUP.md)** for detailed documentation on user roles, permissions, and operations.
+
+---
+
+## Quick Start
+
+For a fresh instance with multiple admins:
+
+```bash
+# 1. SSH into instance and clone the repo
+ssh ubuntu@<static-ip>
+git clone https://github.com/bassoman/NextJS-26.git
+cd NextJS-26
+
+# 2. Run the setup script (creates app at /var/www/carc-app)
+DOMAIN=example.com EMAIL=admin@example.com bash deployment/scripts/lightsail-deploy.sh
+
+# 3. Add team members
+sudo bash /var/www/carc-app/deployment/scripts/setup-deployment-users.sh \
+  --user alice --password "pass123" --deployer --pubkey alice_id_rsa.pub \
+  --user bob --password "pass456" --pubkey bob_id_rsa.pub
+
+# 4. Done! alice and bob can now SSH in and manage deployments
+```
+
+Users created by `setup-deployment-users.sh` are added to Ubuntu's `sudo` group and have full administrative access. Set a password for each account (using `--password` or `sudo passwd <username>`) to use password-authenticated sudo. Only add trusted team members.
+
+---
+
+## Architecture Changes (v2.0)
+
+### Before (Legacy)
+- App location: `~/NextJS-26` (home directory)
+- Service user: `ubuntu` (shared admin account)
+- Permissions: home directory defaults
+- Multi-user: not designed for it
+
+### Now (v2.0)
+- App location: `/var/www/carc-app` (FHS-compliant)
+- Service user: `www-data` (unprivileged)
+- Admin group: `webadmins` (all can read/write code)
+- Deployer group: `deployers` (subset can restart services)
+- Permissions: proper group inheritance with setgid
+
+**Migration:** Existing deployments at `~/NextJS-26` will continue to work; new deployments will use `/var/www/carc-app`.
+
+---
+
 ## 1. Create the instance
 
 1. Lightsail console → **Create instance** → Linux/Unix → **OS Only** → Ubuntu 22.04 or 24.04.
@@ -12,7 +60,7 @@ Deploys the app on a single Ubuntu Lightsail instance: Node.js app under systemd
 
 ## 2. Prepare your values
 
-Have the production environment variables ready (PayPal keys, admin diagnostic credentials, etc.). On the server they live only in `/etc/carc/prod.env` (loaded by systemd); no `.env.local` is used. `NEXT_PUBLIC_*` values are also read from that file at build time. Do not commit them.
+Have the production environment variables ready (PayPal keys, admin diagnostic credentials, etc.). On the server they live in `/var/www/carc-app/.env` (loaded by systemd); no `.env.local` is used. `NEXT_PUBLIC_*` values are also read from that file at build time. Do not commit them.
 
 Do not include `PORT` or `SQLITE_DATABASE_PATH`; the script sets them (`3000` and `/var/carc/prod/data/carc.db`).
 
@@ -27,46 +75,55 @@ scp frontend/data/carc.db ubuntu@<static-ip>:~/NextJS-26/frontend/data/
 
 ## 3. Run the script
 
-SSH in as `ubuntu` and run:
+SSH in as a non-root user and run:
 
 ```bash
 ssh ubuntu@<static-ip>
-curl -fsSLO https://raw.githubusercontent.com/bassoman/NextJS-26/main/deployment/scripts/lightsail-setup.sh
-DOMAIN=example.com EMAIL=you@example.com bash lightsail-setup.sh
+git clone https://github.com/bassoman/NextJS-26.git  # Or: cd NextJS-26 && git pull
+DOMAIN=example.com EMAIL=you@example.com bash NextJS-26/deployment/scripts/lightsail-deploy.sh
 ```
 
-If the repo is private, clone it first (`git clone ... ~/NextJS-26`) and run `bash ~/NextJS-26/deployment/scripts/lightsail-setup.sh`.
+To deploy a different branch, set `REPO_BRANCH` before the command; it defaults to `main`:
+
+```bash
+REPO_BRANCH=staging DOMAIN=example.com EMAIL=you@example.com \
+  bash NextJS-26/deployment/scripts/lightsail-deploy.sh
+```
+
+If the repo is private, authenticate with your SSH key or personal access token.
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `DOMAIN` | no | Enables the nginx `server_name` and HTTPS. Without it, the site is served over HTTP on the IP. |
 | `EMAIL` | with `DOMAIN` | Let's Encrypt contact (a personal address is fine). |
-| `USE_SSM` | no | `1` = fetch env from AWS SSM `/carc/prod/*` instead of prompting (see below). |
-| `REPO_URL` | no | Override the git repo URL. |
-| `APP_DIR` | no | App location on the server (default `~/NextJS-26`); also written into the systemd unit. |
+| `REPO_URL` | no | Git repository URL to clone or pull from. Set this to the upstream repository URL when deploying from a fork (default: `https://github.com/bassoman/NextJS-26.git`). |
+| `REPO_BRANCH` | no | Branch to clone or pull from (default: `main`). |
+| `APP_DIR` | no | App location on the server (default `/var/www/carc-app`); must be writable by the current user. |
 | `WWW_ALIAS` | no | `0` to skip `www.DOMAIN` (default `1`: served and redirected to `DOMAIN`). |
 
-When prompted, paste the `KEY=value` lines and press **Ctrl-D**.
+Setup does not prompt for environment variables. If `.env` does not already exist, it fetches them from AWS SSM under `/carc/prod/*`; configure AWS CLI credentials and access before running setup.
+
+Append `--init` to install and configure without enabling or starting the app or backup services. The SSM writer remains at `deployment/scripts/ssm-write.sh`; setup does not run or install it elsewhere.
 
 ## 4. What the script does
 
 1. Installs Node 22, nginx, sqlite3, build tools, and adds 2 GB swap if none exists.
 2. Clones (or pulls) the repo to `~/NextJS-26`, then `npm ci` and `npm run build`.
-3. Writes `/etc/carc/prod.env` (mode 600) if it doesn't already exist.
-4. Seeds `/var/carc/prod` and `/var/carc/sandbox` databases via `initialize-databases.sh` (skipped if the prod DB exists or the source DB is missing).
-5. Installs the systemd units, starts `carc-app@prod`, and enables the hourly `carc-backup.timer`.
+3. Fetches `/carc/prod/*` from SSM into `/var/www/carc-app/.env` (mode 640) if the env file doesn't already exist.
+4. Seeds `/var/carc/prod` and `/var/carc/sandbox` databases via `initialize-databases.sh` (skipped if the prod DB exists or the source DB is missing), then repairs permissions on existing database files and directories.
+5. Installs the systemd units; normal mode starts `carc-app@prod` and enables the hourly `carc-backup.timer`, while `--init` leaves both services unenabled and does not start them.
 6. Runs `configure-nginx.sh` to proxy nginx to `127.0.0.1:3000`, and runs certbot if `DOMAIN` and `EMAIL` are set.
 
 The script is safe to re-run to deploy updates (it pulls, rebuilds and restarts), and it won't overwrite an existing env file or database.
 
 ## 5. Optional: use AWS SSM Parameter Store for env values
 
-Lightsail instances have no IAM role, so this needs an IAM user with access keys on the server:
+Lightsail instances have no IAM role, so this needs AWS CLI credentials on the server. Setup requires read access to `/carc/prod/*` and does not prompt for environment values:
 
-1. Create parameters (SecureString) named `/carc/prod/<ENV_VAR_NAME>` in `us-west-2` (or set `AWS_REGION`).
-2. Create an IAM user allowed `ssm:GetParametersByPath` on `/carc/prod/*` (plus `kms:Decrypt` for the key).
+1. Create parameters named `/carc/prod/<ENV_VAR_NAME>` in `us-west-2` (or set `AWS_REGION`).
+2. Configure credentials with `ssm:GetParametersByPath` on `/carc/prod/*` (plus `kms:Decrypt` for SecureString parameters).
 3. On the server: install the AWS CLI and run `aws configure`.
-4. Run the script with `USE_SSM=1`.
+4. If creating or updating parameters interactively, run `bash deployment/scripts/ssm-write.sh --project carc --env prod` from the checkout. The setup script automatically fetches parameters when `.env` is absent; use `fetch-ssm-params.sh` to refresh it manually.
 
 For a single Lightsail instance, a root-only `/etc/carc/prod.env` is simpler and about as secure.
 
@@ -104,7 +161,7 @@ Or copy `deployment/nginx.env.example` to `deployment/nginx.env` (gitignored), e
 | `EMAIL` | none | Let's Encrypt contact; with `DOMAIN` enables HTTPS. |
 | `ENABLE_HTTPS` | 1 if both set | Force on/off. |
 | `WWW_ALIAS` | `1` | Serve `www.DOMAIN`, redirecting to `DOMAIN`, and include it in the cert. |
-| `APP_DIR` | `~/NextJS-26` | App directory on the server (systemd `WorkingDirectory` set by `lightsail-setup.sh`). |
+| `APP_DIR` | `~/NextJS-26` | App directory on the server (systemd `WorkingDirectory` set by `lightsail-deploy.sh`). |
 | `APP_PORT` | `3000` | Port the Next.js app listens on. |
 | `SITE_NAME` | `carc` | nginx site file name. |
 | `CLIENT_MAX_BODY_SIZE` | `10m` | Upload limit. |
